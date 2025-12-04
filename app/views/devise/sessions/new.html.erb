@@ -1,0 +1,32 @@
+<div class="devise-form" style="max-width: 400px; margin: 4rem auto; background-color: #ffffff; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+  <h1 style="text-align: center; margin-bottom: 2rem; color: #212529 !important; font-size: 2rem; font-weight: 700;">Entrar</h1>
+
+  <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+    <div style="margin-bottom: 1.5rem;">
+      <%= f.label :email, "Email", style: "display: block; margin-bottom: 0.5rem; font-weight: 600; color: #212529 !important;" %>
+      <%= f.email_field :email, autofocus: true, autocomplete: "email", style: "width: 100%; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 0.25rem; background-color: #ffffff; color: #212529; font-size: 1rem; box-sizing: border-box;" %>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
+      <%= f.label :password, "Senha", style: "display: block; margin-bottom: 0.5rem; font-weight: 600; color: #212529 !important;" %>
+      <%= f.password_field :password, autocomplete: "current-password", style: "width: 100%; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 0.25rem; background-color: #ffffff; color: #212529; font-size: 1rem; box-sizing: border-box;" %>
+    </div>
+
+    <% if devise_mapping.rememberable? %>
+      <div style="margin-bottom: 1.5rem; display: flex; align-items: center;">
+        <%= f.check_box :remember_me, style: "margin-right: 0.5rem; cursor: pointer; width: 18px; height: 18px;" %>
+        <%= f.label :remember_me, "Lembrar-me", style: "color: #212529 !important; cursor: pointer; margin: 0; font-weight: normal;" %>
+      </div>
+    <% end %>
+
+    <div style="margin-bottom: 1.5rem;">
+      <%= f.submit "Entrar", style: "width: 100%; background-color: #007bff; color: #ffffff !important; padding: 0.75rem; border: none; border-radius: 0.25rem; cursor: pointer; font-size: 1rem; font-weight: 600; transition: background-color 0.2s;" %>
+    </div>
+  <% end %>
+
+  <div class="devise-links" style="text-align: center; margin-top: 1rem;">
+    <%= render "devise/shared/links" %>
+  </div>
+</div>
+
+
