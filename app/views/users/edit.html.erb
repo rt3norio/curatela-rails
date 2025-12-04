@@ -1,0 +1,53 @@
+<div style="max-width: 600px; margin: 0 auto;">
+  <h1>Editar Perfil</h1>
+
+  <%= form_with model: @user, local: true, multipart: true, style: "margin-top: 2rem;" do |form| %>
+    <% if @user.errors.any? %>
+      <div style="background-color: #f8d7da; color: #721c24; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1rem;">
+        <h3><%= pluralize(@user.errors.count, "erro") %> impediram este perfil de ser salvo:</h3>
+        <ul>
+          <% @user.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div style="margin-bottom: 1.5rem;">
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <% if @user.profile_picture.attached? %>
+          <%= image_tag @user.profile_picture, style: "width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid #007bff;" %>
+        <% else %>
+          <div style="width: 150px; height: 150px; border-radius: 50%; background-color: #e9ecef; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #6c757d;">
+            <%= @user.email.first.upcase %>
+          </div>
+        <% end %>
+      </div>
+
+      <%= form.label :profile_picture, "Foto de Perfil", style: "display: block; margin-bottom: 0.5rem; font-weight: bold;" %>
+      <%= form.file_field :profile_picture, accept: "image/*", style: "width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 0.25rem;" %>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
+      <%= form.label :email, "Email", style: "display: block; margin-bottom: 0.5rem; font-weight: bold;" %>
+      <%= form.email_field :email, style: "width: 100%; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 0.25rem;" %>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
+      <%= form.label :password, "Nova Senha (deixe em branco se não quiser alterar)", style: "display: block; margin-bottom: 0.5rem; font-weight: bold;" %>
+      <%= form.password_field :password, autocomplete: "new-password", style: "width: 100%; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 0.25rem;" %>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
+      <%= form.label :password_confirmation, "Confirmação de Nova Senha", style: "display: block; margin-bottom: 0.5rem; font-weight: bold;" %>
+      <%= form.password_field :password_confirmation, autocomplete: "new-password", style: "width: 100%; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 0.25rem;" %>
+    </div>
+
+    <div style="display: flex; gap: 1rem;">
+      <%= form.submit "Atualizar Perfil", style: "background-color: #007bff; color: #fff; padding: 0.75rem 1.5rem; border: none; border-radius: 0.25rem; cursor: pointer; font-size: 1rem;" %>
+      <%= link_to "Cancelar", user_path(@user), style: "text-decoration: none; color: #6c757d; padding: 0.75rem 1.5rem; border: 1px solid #ced4da; border-radius: 0.25rem; display: inline-block;" %>
+    </div>
+  <% end %>
+</div>
+
+

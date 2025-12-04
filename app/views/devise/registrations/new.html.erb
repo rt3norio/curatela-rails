@@ -1,0 +1,35 @@
+<div class="devise-form" style="max-width: 400px; margin: 4rem auto; background-color: #ffffff; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+  <h1 style="text-align: center; margin-bottom: 2rem; color: #212529 !important; font-size: 2rem; font-weight: 700;">Criar Conta</h1>
+
+  <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { multipart: true }) do |f| %>
+    <%= render "devise/shared/error_messages", resource: resource %>
+
+    <div style="margin-bottom: 1.5rem;">
+      <%= f.label :email, "Email", style: "display: block; margin-bottom: 0.5rem; font-weight: 600; color: #212529 !important;" %>
+      <%= f.email_field :email, autofocus: true, autocomplete: "email", style: "width: 100%; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 0.25rem; background-color: #ffffff; color: #212529; font-size: 1rem; box-sizing: border-box;" %>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
+      <%= f.label :password, "Senha", style: "display: block; margin-bottom: 0.5rem; font-weight: 600; color: #212529 !important;" %>
+      <% if @minimum_password_length %>
+        <small style="color: #6c757d !important; display: block; margin-bottom: 0.25rem;">(<%= @minimum_password_length %> caracteres no mínimo)</small>
+      <% end %>
+      <%= f.password_field :password, autocomplete: "new-password", style: "width: 100%; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 0.25rem; background-color: #ffffff; color: #212529; font-size: 1rem; box-sizing: border-box;" %>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
+      <%= f.label :password_confirmation, "Confirmação de Senha", style: "display: block; margin-bottom: 0.5rem; font-weight: 600; color: #212529 !important;" %>
+      <%= f.password_field :password_confirmation, autocomplete: "new-password", style: "width: 100%; padding: 0.75rem; border: 1px solid #ced4da; border-radius: 0.25rem; background-color: #ffffff; color: #212529; font-size: 1rem; box-sizing: border-box;" %>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
+      <%= f.submit "Registrar", style: "width: 100%; background-color: #28a745; color: #ffffff !important; padding: 0.75rem; border: none; border-radius: 0.25rem; cursor: pointer; font-size: 1rem; font-weight: 600; transition: background-color 0.2s;" %>
+    </div>
+  <% end %>
+
+  <div class="devise-links" style="text-align: center; margin-top: 1rem;">
+    <%= render "devise/shared/links" %>
+  </div>
+</div>
+
+

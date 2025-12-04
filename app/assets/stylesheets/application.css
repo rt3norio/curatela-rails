@@ -1,0 +1,148 @@
+/*
+ * This is a manifest file that'll be compiled into application.css.
+ *
+ * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
+ * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
+ * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
+ * depending on specificity.
+ *
+ * Consider organizing styles into separate files for maintainability.
+ */
+
+/* Global Styles - Garantir legibilidade */
+body {
+  background-color: #ffffff !important;
+  color: #212529 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  cursor: default !important;
+  line-height: 1.6;
+}
+
+/* Garantir que todos os textos sejam legíveis */
+h1, h2, h3, h4, h5, h6 {
+  color: #212529 !important;
+}
+
+p, span, div, label {
+  color: #212529 !important;
+}
+
+/* Links legíveis */
+a {
+  color: #007bff !important;
+  cursor: pointer !important;
+}
+
+a:hover {
+  color: #0056b3 !important;
+  text-decoration: underline !important;
+}
+
+/* Formulários legíveis */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+  background-color: #ffffff !important;
+  color: #212529 !important;
+  border: 1px solid #ced4da !important;
+  cursor: text !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  border-color: #007bff !important;
+  outline: 2px solid rgba(0, 123, 255, 0.25) !important;
+  outline-offset: 2px !important;
+}
+
+/* Labels legíveis */
+label {
+  color: #212529 !important;
+  font-weight: 600 !important;
+  cursor: default !important;
+}
+
+/* Botões legíveis */
+button,
+input[type="submit"],
+input[type="button"] {
+  cursor: pointer !important;
+  color: #ffffff !important;
+}
+
+/* Checkbox e Radio legíveis */
+input[type="checkbox"],
+input[type="radio"] {
+  cursor: pointer !important;
+  accent-color: #007bff !important;
+}
+
+/* Devise specific styles */
+.devise-form {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.devise-form h1 {
+  color: #212529 !important;
+  margin-bottom: 1.5rem;
+}
+
+.devise-form label {
+  color: #212529 !important;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.devise-form input[type="email"],
+.devise-form input[type="password"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  background-color: #ffffff;
+  color: #212529;
+  font-size: 1rem;
+}
+
+.devise-form input[type="submit"] {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.devise-form input[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+.devise-links {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.devise-links a {
+  color: #007bff !important;
+  text-decoration: none;
+  margin: 0 0.5rem;
+}
+
+.devise-links a:hover {
+  text-decoration: underline;
+  color: #0056b3 !important;
+}

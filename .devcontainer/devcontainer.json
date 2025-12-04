@@ -1,0 +1,39 @@
+{
+  "name": "Rails DevContainer",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Rails Server",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "bundle install && rails db:create db:migrate",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rebornix.Ruby",
+        "castwide.solargraph",
+        "Shopify.ruby-lsp",
+        "KoichiSasada.vscode-rdbg"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "files.eol": "\n",
+        "editor.formatOnSave": true,
+        "ruby.useLanguageServer": true,
+        "ruby.lint": {
+          "rubocop": true
+        }
+      }
+    }
+  },
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "BUNDLE_PATH": "/usr/local/bundle"
+  }
+}
+
