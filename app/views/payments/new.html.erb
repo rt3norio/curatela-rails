@@ -46,17 +46,27 @@
         <%= form.text_area :description, class: "form-control", rows: 3 %>
       </div>
 
+      <div class="mb-3">
+        <%= form.label :partner_id, "Parceiro", class: "form-label" %>
+        <div class="input-group">
+          <%= form.collection_select :partner_id, @partners, :id, :display_name, 
+              { prompt: "Selecione um parceiro existente ou preencha manualmente abaixo", include_blank: true }, 
+              { class: "form-select", id: "partner_select" } %>
+          <%= link_to "Novo Parceiro", new_partner_path, class: "btn btn-outline-secondary", target: "_blank" %>
+        </div>
+        <small class="form-text text-muted">Selecione um parceiro cadastrado ou deixe em branco para preencher manualmente.</small>
+      </div>
+
       <div class="row g-3 mb-3">
         <div class="col-12 col-md-6">
           <%= form.label :partner_name, "Nome do Parceiro/Fornecedor", class: "form-label" %>
           <%= form.text_field :partner_name, class: "form-control", id: "partner_name_input", 
-              placeholder: "Digite o nome ou CPF/CNPJ para buscar", 
-              autocomplete: "off" %>
-          <div id="partner_suggestions" class="list-group position-absolute" style="display: none; z-index: 1000; max-height: 200px; overflow-y: auto; width: calc(100% - 24px);"></div>
+              placeholder: "Preenchido automaticamente ao selecionar parceiro" %>
         </div>
         <div class="col-12 col-md-6">
           <%= form.label :cpf_cnpj, "CPF/CNPJ", class: "form-label" %>
-          <%= form.text_field :cpf_cnpj, class: "form-control", id: "cpf_cnpj_input" %>
+          <%= form.text_field :cpf_cnpj, class: "form-control", id: "cpf_cnpj_input",
+              placeholder: "Preenchido automaticamente ao selecionar parceiro" %>
         </div>
       </div>
 
@@ -104,73 +114,26 @@
 <% end %>
 
 <script>
-  let partnerSuggestionsTimeout = null;
-
-  // Partner autocomplete
-  document.getElementById('partner_name_input').addEventListener('input', function(e) {
-    clearTimeout(partnerSuggestionsTimeout);
-    const query = e.target.value;
-    const suggestionsDiv = document.getElementById('partner_suggestions');
-    
-    if (query.length < 2) {
-      suggestionsDiv.style.display = 'none';
-      return;
-    }
-    
-    partnerSuggestionsTimeout = setTimeout(() => {
-      fetch(`/payments/cpf_cnpj_suggestions?q=${encodeURIComponent(query)}`)
-        .then(response => response.json())
-        .then(data => {
-          // Clear previous suggestions safely
-          while (suggestionsDiv.firstChild) {
-            suggestionsDiv.removeChild(suggestionsDiv.firstChild);
-          }
-          
-          if (data.length > 0) {
-            data.forEach(partner => {
-              // Validate partner data
-              if (!partner.name || !partner.cpf_cnpj || !partner.label) {
-                return;
-              }
-              
-              const item = document.createElement('a');
-              item.href = '#';
-              item.className = 'list-group-item list-group-item-action';
-              // Use textContent to prevent XSS
-              item.textContent = partner.label;
-              item.onclick = function(e) {
-                e.preventDefault();
-                // Sanitize by setting value properties directly
-                const nameInput = document.getElementById('partner_name_input');
-                const cpfInput = document.getElementById('cpf_cnpj_input');
-                if (nameInput && cpfInput) {
-                  nameInput.value = String(partner.name);
-                  cpfInput.value = String(partner.cpf_cnpj);
-                }
-                suggestionsDiv.style.display = 'none';
-              };
-              suggestionsDiv.appendChild(item);
-            });
-            suggestionsDiv.style.display = 'block';
-          } else {
-            suggestionsDiv.style.display = 'none';
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching partner suggestions:', error);
-          suggestionsDiv.style.display = 'none';
-        });
-    }, 300);
-  });
-  
-  // Hide suggestions when clicking outside
-  document.addEventListener('click', function(e) {
-    const suggestionsDiv = document.getElementById('partner_suggestions');
-    const nameInput = document.getElementById('partner_name_input');
-    if (e.target !== nameInput && !suggestionsDiv.contains(e.target)) {
-      suggestionsDiv.style.display = 'none';
-    }
-  });
+  // Partner selection handler
+  const partnerSelect = document.getElementById('partner_select');
+  if (partnerSelect) {
+    partnerSelect.addEventListener('change', function(e) {
+      const selectedOption = e.target.options[e.target.selectedIndex];
+      if (selectedOption.value) {
+        // Parse partner display name format: "Name - CPF/CNPJ"
+        const displayText = selectedOption.text;
+        const parts = displayText.split(' - ');
+        if (parts.length === 2) {
+          document.getElementById('partner_name_input').value = parts[0];
+          document.getElementById('cpf_cnpj_input').value = parts[1];
+        }
+      } else {
+        // Clear fields if no partner selected
+        document.getElementById('partner_name_input').value = '';
+        document.getElementById('cpf_cnpj_input').value = '';
+      }
+    });
+  }
 
   // Atualizar classificações secundárias quando primária mudar
   document.getElementById('primary_classification_select').addEventListener('change', function() {

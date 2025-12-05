@@ -1,0 +1,29 @@
+<h1 class="h3 mb-4">Novo Parceiro</h1>
+
+<%= form_with model: @partner, local: true do |f| %>
+  <% if @partner.errors.any? %>
+    <div class="alert alert-danger">
+      <h4><%= pluralize(@partner.errors.count, "erro") %> impediram que este parceiro fosse salvo:</h4>
+      <ul>
+        <% @partner.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= f.label :name, "Nome", class: "form-label" %>
+    <%= f.text_field :name, class: "form-control", placeholder: "Ex: Farmácia ABC", required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :cpf_cnpj, "CPF/CNPJ", class: "form-label" %>
+    <%= f.text_field :cpf_cnpj, class: "form-control", placeholder: "Ex: 12.345.678/0001-90", required: true %>
+  </div>
+
+  <div class="d-flex gap-2">
+    <%= f.submit "Criar Parceiro", class: "btn btn-primary" %>
+    <%= link_to "Cancelar", partners_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

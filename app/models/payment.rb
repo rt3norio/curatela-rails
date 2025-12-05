@@ -5,8 +5,12 @@ class Payment < ApplicationRecord
   belongs_to :secondary_classification
   belongs_to :curatelado, optional: true
   belongs_to :curator, class_name: 'User', optional: true
+  belongs_to :partner, optional: true
   has_many :payment_reimbursements, dependent: :destroy
   has_many :reimbursements, through: :payment_reimbursements
+  
+  # Callbacks to sync partner data
+  before_validation :sync_partner_data
 
   # Active Storage para foto do documento
   has_one_attached :document_photo
@@ -51,6 +55,13 @@ class Payment < ApplicationRecord
 
     unless secondary_classification.primary_classification_id == primary_classification.id
       errors.add(:secondary_classification, 'deve pertencer à classificação primária selecionada')
+    end
+  end
+  
+  def sync_partner_data
+    if partner.present?
+      self.partner_name = partner.name
+      self.cpf_cnpj = partner.cpf_cnpj
     end
   end
 end

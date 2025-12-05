@@ -45,6 +45,9 @@ Rails.application.routes.draw do
 
   # Reimbursements routes
   resources :reimbursements
+  
+  # Partners routes
+  resources :partners
 
   # Defines the root path route ("/")
   root "payments#index"

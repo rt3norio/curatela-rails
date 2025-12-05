@@ -7,6 +7,7 @@ class Curatelado < ApplicationRecord
   has_many :reimbursements, dependent: :destroy
   has_many :primary_classifications, dependent: :destroy
   has_many :secondary_classifications, dependent: :destroy
+  has_many :partners, dependent: :destroy
 
   validates :name, presence: true
   

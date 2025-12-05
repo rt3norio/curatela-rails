@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_05_173141) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_05_182124) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -58,6 +58,18 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_05_173141) do
     t.index ["name"], name: "index_curatelados_on_name"
   end
 
+  create_table "partners", force: :cascade do |t|
+    t.string "cpf_cnpj", null: false
+    t.datetime "created_at", null: false
+    t.integer "curatelado_id"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cpf_cnpj"], name: "index_partners_on_cpf_cnpj"
+    t.index ["curatelado_id", "cpf_cnpj"], name: "index_partners_on_curatelado_id_and_cpf_cnpj", unique: true
+    t.index ["curatelado_id"], name: "index_partners_on_curatelado_id"
+    t.index ["name"], name: "index_partners_on_name"
+  end
+
   create_table "payment_reimbursements", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "payment_id", null: false
@@ -75,6 +87,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_05_173141) do
     t.integer "curator_id"
     t.date "date", null: false
     t.text "description"
+    t.integer "partner_id"
     t.string "partner_name"
     t.string "payment_method"
     t.integer "primary_classification_id", null: false
@@ -86,6 +99,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_05_173141) do
     t.index ["curatelado_id"], name: "index_payments_on_curatelado_id"
     t.index ["curator_id"], name: "index_payments_on_curator_id"
     t.index ["date"], name: "index_payments_on_date"
+    t.index ["partner_id"], name: "index_payments_on_partner_id"
     t.index ["partner_name"], name: "index_payments_on_partner_name"
     t.index ["primary_classification_id"], name: "index_payments_on_primary_classification_id"
     t.index ["reimbursement_code"], name: "index_payments_on_reimbursement_code"
@@ -139,9 +153,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_05_173141) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "curatelado_curators", "curatelados"
   add_foreign_key "curatelado_curators", "users"
+  add_foreign_key "partners", "curatelados"
   add_foreign_key "payment_reimbursements", "payments"
   add_foreign_key "payment_reimbursements", "reimbursements"
   add_foreign_key "payments", "curatelados"
+  add_foreign_key "payments", "partners"
   add_foreign_key "payments", "primary_classifications"
   add_foreign_key "payments", "secondary_classifications"
   add_foreign_key "payments", "users", column: "curator_id"

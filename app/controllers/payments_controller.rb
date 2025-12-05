@@ -26,6 +26,11 @@ class PaymentsController < ApplicationController
     @primary_classifications = PrimaryClassification.by_curatelado(@current_curatelado&.id).order(:name)
     @secondary_classifications = []
     @curators = @current_curatelado ? @current_curatelado.curators : [current_user]
+    @partners = if @current_curatelado
+                  Partner.where(curatelado_id: @current_curatelado.id).order(:name)
+                else
+                  Partner.where(curatelado_id: nil).order(:name)
+                end
   end
 
   def create
@@ -38,6 +43,11 @@ class PaymentsController < ApplicationController
                                    []
                                  end
     @curators = @current_curatelado ? @current_curatelado.curators : [current_user]
+    @partners = if @current_curatelado
+                  Partner.where(curatelado_id: @current_curatelado.id).order(:name)
+                else
+                  Partner.where(curatelado_id: nil).order(:name)
+                end
 
     if @payment.save
       redirect_to @payment, notice: 'Pagamento registrado com sucesso.'
@@ -54,6 +64,11 @@ class PaymentsController < ApplicationController
                                    []
                                  end
     @curators = @current_curatelado ? @current_curatelado.curators : [current_user]
+    @partners = if @current_curatelado
+                  Partner.where(curatelado_id: @current_curatelado.id).order(:name)
+                else
+                  Partner.where(curatelado_id: nil).order(:name)
+                end
   end
 
   def update
@@ -64,6 +79,11 @@ class PaymentsController < ApplicationController
                                    []
                                  end
     @curators = @current_curatelado ? @current_curatelado.curators : [current_user]
+    @partners = if @current_curatelado
+                  Partner.where(curatelado_id: @current_curatelado.id).order(:name)
+                else
+                  Partner.where(curatelado_id: nil).order(:name)
+                end
 
     if @payment.update(payment_params)
       redirect_to @payment, notice: 'Pagamento atualizado com sucesso.'
@@ -127,7 +147,7 @@ class PaymentsController < ApplicationController
   def payment_params
     params.require(:payment).permit(:primary_classification_id, :secondary_classification_id,
                                     :description, :cpf_cnpj, :partner_name, :value, :date, 
-                                    :payment_method, :document_photo, :curator_id)
+                                    :payment_method, :document_photo, :curator_id, :partner_id)
   end
 end
 
