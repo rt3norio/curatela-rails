@@ -1,0 +1,143 @@
+<h1 class="h3 mb-3">Novo Pagamento</h1>
+
+<%= form_with model: @payment, local: true, multipart: true, class: "needs-validation", novalidate: true do |form| %>
+  <% if @payment.errors.any? %>
+    <div class="alert alert-danger">
+      <h5><%= pluralize(@payment.errors.count, "erro") %> impediram este pagamento de ser salvo:</h5>
+      <ul class="mb-0">
+        <% @payment.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-6">
+          <%= form.label :primary_classification_id, "Classificação Primária", class: "form-label" %>
+          <%= form.collection_select :primary_classification_id, @primary_classifications, :id, :name, 
+              { prompt: "Selecione..." }, 
+              { class: "form-select", id: "primary_classification_select", required: true } %>
+        </div>
+        <div class="col-12 col-md-6">
+          <%= form.label :secondary_classification_id, "Classificação Secundária", class: "form-label" %>
+          <%= form.collection_select :secondary_classification_id, @secondary_classifications, :id, :name, 
+              { prompt: "Selecione..." }, 
+              { class: "form-select", id: "secondary_classification_select", required: true } %>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <%= form.label :description, "Descrição", class: "form-label" %>
+        <%= form.text_area :description, class: "form-control", rows: 3 %>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-6">
+          <%= form.label :cpf_cnpj, "CPF/CNPJ", class: "form-label" %>
+          <%= form.text_field :cpf_cnpj, class: "form-control", id: "cpf_cnpj_input", list: "cpf_cnpj_list" %>
+          <datalist id="cpf_cnpj_list">
+            <% @cpf_cnpj_list.each do |cpf_cnpj| %>
+              <option value="<%= cpf_cnpj %>">
+            <% end %>
+          </datalist>
+        </div>
+        <div class="col-12 col-md-3">
+          <%= form.label :value, "Valor", class: "form-label" %>
+          <div class="input-group">
+            <span class="input-group-text">R$</span>
+            <%= form.number_field :value, class: "form-control", step: 0.01, min: 0, required: true %>
+          </div>
+        </div>
+        <div class="col-12 col-md-3">
+          <%= form.label :date, "Data", class: "form-label" %>
+          <%= form.date_field :date, class: "form-control", required: true %>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <%= form.label :payment_method, "Como foi pago", class: "form-label" %>
+        <%= form.text_field :payment_method, class: "form-control", placeholder: "Ex: Dinheiro, PIX, Cartão, etc." %>
+      </div>
+
+      <div class="mb-3">
+        <%= form.label :document_photo, "Foto do Documento", class: "form-label" %>
+        <div class="d-grid gap-2 d-md-block mb-2">
+          <input type="file" id="camera_input" accept="image/*" capture="environment" style="display: none;">
+          <button type="button" class="btn btn-outline-primary w-100 w-md-auto" onclick="document.getElementById('camera_input').click();">
+            📷 Capturar da Câmera
+          </button>
+          <button type="button" class="btn btn-outline-secondary w-100 w-md-auto" onclick="document.getElementById('payment_document_photo').click();">
+            📁 Enviar Arquivo
+          </button>
+        </div>
+        <%= form.file_field :document_photo, class: "form-control", id: "payment_document_photo", accept: "image/*", required: true %>
+        <div id="image_preview" class="mt-3" style="display: none;">
+          <img id="preview_img" src="" alt="Preview" class="img-fluid rounded border" style="max-width: 100%;">
+        </div>
+      </div>
+
+      <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+        <%= link_to "Cancelar", payments_path, class: "btn btn-secondary order-md-2" %>
+        <%= form.submit "Salvar Pagamento", class: "btn btn-primary order-md-1" %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<script>
+  // Atualizar classificações secundárias quando primária mudar
+  document.getElementById('primary_classification_select').addEventListener('change', function() {
+    const primaryId = this.value;
+    const secondarySelect = document.getElementById('secondary_classification_select');
+    
+    if (primaryId) {
+      fetch(`/payments/secondary_classifications?primary_classification_id=${primaryId}`)
+        .then(response => response.json())
+        .then(data => {
+          secondarySelect.innerHTML = '<option value="">Selecione...</option>';
+          data.forEach(function(item) {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.name;
+            secondarySelect.appendChild(option);
+          });
+        });
+    } else {
+      secondarySelect.innerHTML = '<option value="">Selecione...</option>';
+    }
+  });
+
+  // Preview da imagem
+  document.getElementById('payment_document_photo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('preview_img').src = e.target.result;
+        document.getElementById('image_preview').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Captura da câmera
+  document.getElementById('camera_input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      document.getElementById('payment_document_photo').files = dataTransfer.files;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('preview_img').src = e.target.result;
+        document.getElementById('image_preview').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+</script>
+

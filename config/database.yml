@@ -1,41 +1,36 @@
-# SQLite. Versions 3.8.0 and up are supported.
-#   gem install sqlite3
-#
-#   Ensure the SQLite 3 gem is defined in your Gemfile
-#   gem "sqlite3"
-#
+# SQLite via Litestack.
+# `Litesupport.root(env).join(<path>)` stores data under `LITESTACK_DATA_PATH` (default: ./db/<env>).
+# Set LITESTACK_DATA_PATH="/data" in production so the DB lives on the Fly volume.
 default: &default
-  adapter: sqlite3
-  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  timeout: 5000
+  adapter: litedb
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  idle_timeout: 0
 
 development:
   <<: *default
-  database: storage/development.sqlite3
+  database: <%= Litesupport.root("development").join("data.sqlite3") %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: storage/test.sqlite3
+  database: <%= Litesupport.root("test").join("data.sqlite3") %>
 
-
-# Store production database in the storage/ directory, which by default
-# is mounted as a persistent Docker volume in config/deploy.yml.
+# Keep production data on the Fly volume (/data) via LITESTACK_DATA_PATH.
 production:
   primary:
     <<: *default
-    database: storage/production.sqlite3
+    database: <%= Litesupport.root("production").join("data.sqlite3") %>
   cache:
     <<: *default
-    database: storage/production_cache.sqlite3
+    database: <%= Litesupport.root("production").join("cache.sqlite3") %>
     migrations_paths: db/cache_migrate
   queue:
     <<: *default
-    database: storage/production_queue.sqlite3
+    database: <%= Litesupport.root("production").join("queue.sqlite3") %>
     migrations_paths: db/queue_migrate
   cable:
     <<: *default
-    database: storage/production_cable.sqlite3
+    database: <%= Litesupport.root("production").join("cable.sqlite3") %>
     migrations_paths: db/cable_migrate

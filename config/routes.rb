@@ -15,6 +15,27 @@ Rails.application.routes.draw do
   # User management routes
   resources :users, only: [:index, :show, :edit, :update]
 
+  # Classifications routes
+  resources :classifications, only: [:index] do
+    collection do
+      post :create_primary
+      post :create_secondary
+      delete :destroy_primary, path: 'primary/:id'
+      delete :destroy_secondary, path: 'secondary/:id'
+    end
+  end
+
+  # Payments routes
+  resources :payments do
+    collection do
+      get :secondary_classifications
+      get :cpf_cnpj_suggestions
+    end
+  end
+
+  # Reimbursements routes
+  resources :reimbursements
+
   # Defines the root path route ("/")
-  root "users#index"
+  root "payments#index"
 end

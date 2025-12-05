@@ -1,0 +1,82 @@
+<div class="mb-3">
+  <%= link_to "← Voltar", payments_path, class: "btn btn-secondary btn-sm" %>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="h4 mb-0">Pagamento #<%= @payment.id %></h2>
+  </div>
+  <div class="card-body">
+    <div class="row g-3 mb-3">
+      <div class="col-12 col-md-6">
+        <strong class="d-block mb-1">Data:</strong>
+        <span><%= @payment.date.strftime("%d/%m/%Y") %></span>
+      </div>
+      <div class="col-12 col-md-6">
+        <strong class="d-block mb-1">Valor:</strong>
+        <span class="h5 text-success"><%= format_currency(@payment.value) %></span>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-12 col-md-6">
+        <strong class="d-block mb-1">Classificação Primária:</strong>
+        <span><%= @payment.primary_classification.name %></span>
+      </div>
+      <div class="col-12 col-md-6">
+        <strong class="d-block mb-1">Classificação Secundária:</strong>
+        <span><%= @payment.secondary_classification.name %></span>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-12 col-md-6">
+        <strong class="d-block mb-1">CPF/CNPJ:</strong>
+        <span><%= @payment.cpf_cnpj || "-" %></span>
+      </div>
+      <div class="col-12 col-md-6">
+        <strong class="d-block mb-1">Como foi pago:</strong>
+        <span><%= @payment.payment_method || "-" %></span>
+      </div>
+    </div>
+
+    <% if @payment.description.present? %>
+      <div class="mb-3">
+        <strong class="d-block mb-1">Descrição:</strong>
+        <p class="mb-0"><%= @payment.description %></p>
+      </div>
+    <% end %>
+
+    <div class="mb-3">
+      <strong class="d-block mb-1">Reembolso:</strong>
+      <% if @payment.reimbursement_code.present? %>
+        <span class="badge bg-success me-2"><%= @payment.reimbursement_code %></span>
+        <% if @payment.reimbursements.any? %>
+          <%= link_to "Ver reembolso", reimbursement_path(@payment.reimbursements.first), class: "btn btn-sm btn-outline-primary" %>
+        <% end %>
+      <% else %>
+        <span class="badge bg-secondary">Não reembolsado</span>
+      <% end %>
+    </div>
+
+    <div class="mb-3">
+      <strong class="d-block mb-2">Documento:</strong>
+      <% if @payment.document_photo.attached? %>
+        <div class="mb-2">
+          <%= image_tag @payment.document_photo, class: "img-fluid rounded border", style: "max-width: 100%;" %>
+        </div>
+        <div>
+          <%= link_to "Abrir em nova aba", rails_blob_path(@payment.document_photo, disposition: "inline"), target: "_blank", class: "btn btn-outline-primary btn-sm" %>
+        </div>
+      <% else %>
+        <p class="text-muted mb-0">Sem documento anexado</p>
+      <% end %>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
+      <%= link_to "Editar", edit_payment_path(@payment), class: "btn btn-primary" %>
+      <%= link_to "Excluir", payment_path(@payment), data: { turbo_method: :delete, turbo_confirm: "Tem certeza?" }, class: "btn btn-danger" %>
+    </div>
+  </div>
+</div>
+

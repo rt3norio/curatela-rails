@@ -27,34 +27,58 @@
   </head>
 
   <body style="background-color: #ffffff; color: #212529; cursor: default !important;">
-    <nav style="background-color: #f8f9fa; padding: 1rem; border-bottom: 1px solid #dee2e6;">
-      <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <%= link_to "Curatela Legal", root_path, style: "text-decoration: none; color: #212529 !important; font-weight: bold; font-size: 1.25rem; cursor: pointer;" %>
-        </div>
-        <div>
-          <% if user_signed_in? %>
-            <%= link_to "Usuários", users_path, style: "margin-right: 1rem; text-decoration: none; color: #007bff !important; cursor: pointer;" %>
-            <%= link_to "Meu Perfil", user_path(current_user), style: "margin-right: 1rem; text-decoration: none; color: #007bff !important; cursor: pointer;" %>
-            <%= link_to "Sair", destroy_user_session_path, data: { turbo_method: :delete }, style: "text-decoration: none; color: #dc3545 !important; cursor: pointer;" %>
-          <% else %>
-            <%= link_to "Entrar", new_user_session_path, style: "margin-right: 1rem; text-decoration: none; color: #007bff !important; cursor: pointer;" %>
-            <%= link_to "Registrar", new_user_registration_path, style: "text-decoration: none; color: #28a745 !important; cursor: pointer;" %>
-          <% end %>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+      <div class="container-fluid">
+        <%= link_to "Curatela Legal", root_path, class: "navbar-brand fw-bold" %>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <% if user_signed_in? %>
+              <li class="nav-item">
+                <%= link_to "Pagamentos", payments_path, class: "nav-link" %>
+              </li>
+              <li class="nav-item">
+                <%= link_to "Reembolsos", reimbursements_path, class: "nav-link" %>
+              </li>
+              <li class="nav-item">
+                <%= link_to "Classificações", classifications_path, class: "nav-link" %>
+              </li>
+              <li class="nav-item">
+                <%= link_to "Usuários", users_path, class: "nav-link" %>
+              </li>
+              <li class="nav-item">
+                <%= link_to "Meu Perfil", user_path(current_user), class: "nav-link" %>
+              </li>
+              <li class="nav-item">
+                <%= link_to "Sair", destroy_user_session_path, data: { turbo_method: :delete }, class: "nav-link text-danger" %>
+              </li>
+            <% else %>
+              <li class="nav-item">
+                <%= link_to "Entrar", new_user_session_path, class: "nav-link" %>
+              </li>
+              <li class="nav-item">
+                <%= link_to "Registrar", new_user_registration_path, class: "nav-link text-success" %>
+              </li>
+            <% end %>
+          </ul>
         </div>
       </div>
     </nav>
 
-    <main style="max-width: 1200px; margin: 2rem auto; padding: 0 1rem; background-color: #ffffff; color: #212529;">
+    <main class="container-fluid py-3 px-2 px-md-3">
       <% if notice %>
-        <div style="background-color: #d4edda; color: #155724 !important; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1rem; border: 1px solid #c3e6cb;">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
           <%= notice %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       <% end %>
 
       <% if alert %>
-        <div style="background-color: #f8d7da; color: #721c24 !important; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1rem; border: 1px solid #f5c6cb;">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <%= alert %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       <% end %>
 

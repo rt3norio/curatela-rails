@@ -1,0 +1,166 @@
+<h1 class="h3 mb-3">Novo Reembolso</h1>
+
+<%= form_with model: @reimbursement, local: true, multipart: true, class: "needs-validation", novalidate: true do |form| %>
+  <% if @reimbursement.errors.any? %>
+    <div class="alert alert-danger">
+      <h5><%= pluralize(@reimbursement.errors.count, "erro") %> impediram este reembolso de ser salvo:</h5>
+      <ul class="mb-0">
+        <% @reimbursement.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="mb-3">
+        <%= form.label :code, "Código do Reembolso", class: "form-label" %>
+        <%= form.text_field :code, class: "form-control", required: true, placeholder: "Ex: REEMB-2024-001" %>
+        <small class="form-text text-muted">Código único para identificar este reembolso</small>
+      </div>
+
+      <div class="mb-3">
+        <%= form.label :reimbursement_proof, "Comprovante de Reembolso", class: "form-label" %>
+        <div class="d-grid gap-2 d-md-block mb-2">
+          <input type="file" id="camera_input" accept="image/*" capture="environment" style="display: none;">
+          <button type="button" class="btn btn-outline-primary w-100 w-md-auto" onclick="document.getElementById('camera_input').click();">
+            📷 Capturar da Câmera
+          </button>
+          <button type="button" class="btn btn-outline-secondary w-100 w-md-auto" onclick="document.getElementById('reimbursement_reimbursement_proof').click();">
+            📁 Enviar Arquivo
+          </button>
+        </div>
+        <%= form.file_field :reimbursement_proof, class: "form-control", id: "reimbursement_reimbursement_proof", accept: "image/*" %>
+        <div id="image_preview" class="mt-3" style="display: none;">
+          <img id="preview_img" src="" alt="Preview" class="img-fluid rounded border" style="max-width: 100%;">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Selecione os Pagamentos a Reembolsar</label>
+        <% if @payments.any? %>
+          <div class="mb-2">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="select_all" onclick="toggleAll(this)">
+              <label class="form-check-label" for="select_all">
+                Selecionar todos
+              </label>
+            </div>
+          </div>
+          
+          <!-- Mobile View: Cards -->
+          <div class="d-md-none" style="max-height: 400px; overflow-y: auto;">
+            <% @payments.each do |payment| %>
+              <div class="card mb-2">
+                <div class="card-body">
+                  <div class="form-check mb-2">
+                    <%= check_box_tag "payment_ids[]", payment.id, false, class: "form-check-input payment-checkbox", id: "payment_#{payment.id}" %>
+                    <label class="form-check-label" for="payment_<%= payment.id %>">
+                      <strong><%= format_currency(payment.value) %></strong>
+                    </label>
+                  </div>
+                  <small class="text-muted d-block mb-1"><%= payment.date.strftime("%d/%m/%Y") %></small>
+                  <small class="d-block mb-1">
+                    <strong><%= payment.primary_classification.name %></strong> / 
+                    <%= payment.secondary_classification.name %>
+                  </small>
+                  <% if payment.description.present? %>
+                    <small class="text-muted d-block mb-1"><%= truncate(payment.description, length: 50) %></small>
+                  <% end %>
+                  <small class="text-muted d-block"><%= payment.cpf_cnpj || "-" %></small>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Desktop View: Table -->
+          <div class="d-none d-md-block table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-sm table-hover">
+              <thead class="table-light sticky-top">
+                <tr>
+                  <th>Data</th>
+                  <th>Classificação</th>
+                  <th>Descrição</th>
+                  <th>CPF/CNPJ</th>
+                  <th>Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @payments.each do |payment| %>
+                  <tr>
+                    <td>
+                      <div class="form-check">
+                        <%= check_box_tag "payment_ids[]", payment.id, false, class: "form-check-input payment-checkbox", id: "payment_#{payment.id}" %>
+                        <label class="form-check-label" for="payment_<%= payment.id %>">
+                          <%= payment.date.strftime("%d/%m/%Y") %>
+                        </label>
+                      </div>
+                    </td>
+                    <td>
+                      <small><%= payment.primary_classification.name %></small><br>
+                      <small class="text-muted"><%= payment.secondary_classification.name %></small>
+                    </td>
+                    <td><%= truncate(payment.description, length: 30) %></td>
+                    <td><%= payment.cpf_cnpj %></td>
+                    <td><strong><%= format_currency(payment.value) %></strong></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+          <small class="form-text text-muted">Apenas pagamentos sem reembolso são exibidos</small>
+        <% else %>
+          <div class="alert alert-warning">
+            Não há pagamentos disponíveis para reembolso. Todos os pagamentos já foram reembolsados ou não existem pagamentos cadastrados.
+          </div>
+        <% end %>
+      </div>
+
+      <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+        <%= link_to "Cancelar", reimbursements_path, class: "btn btn-secondary order-md-2" %>
+        <%= form.submit "Salvar Reembolso", class: "btn btn-primary order-md-1" %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<script>
+  function toggleAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.payment-checkbox');
+    checkboxes.forEach(function(cb) {
+      cb.checked = checkbox.checked;
+    });
+  }
+
+  // Preview da imagem
+  document.getElementById('reimbursement_reimbursement_proof').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('preview_img').src = e.target.result;
+        document.getElementById('image_preview').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Captura da câmera
+  document.getElementById('camera_input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      document.getElementById('reimbursement_reimbursement_proof').files = dataTransfer.files;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('preview_img').src = e.target.result;
+        document.getElementById('image_preview').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+</script>
+
