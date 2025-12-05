@@ -14,6 +14,18 @@
 
   <div class="card">
     <div class="card-body">
+      <% if @curators.count > 1 %>
+        <div class="mb-3">
+          <%= form.label :curator_id, "Curador Responsável", class: "form-label" %>
+          <%= form.collection_select :curator_id, @curators, :id, :email, 
+              { prompt: "Selecione..." }, 
+              { class: "form-select", id: "curator_select" } %>
+          <small class="form-text text-muted">Para quem é este pagamento?</small>
+        </div>
+      <% else %>
+        <%= form.hidden_field :curator_id, value: current_user.id %>
+      <% end %>
+
       <div class="row g-3 mb-3">
         <div class="col-12 col-md-6">
           <%= form.label :primary_classification_id, "Classificação Primária", class: "form-label" %>
@@ -36,30 +48,34 @@
 
       <div class="row g-3 mb-3">
         <div class="col-12 col-md-6">
-          <%= form.label :cpf_cnpj, "CPF/CNPJ", class: "form-label" %>
-          <%= form.text_field :cpf_cnpj, class: "form-control", id: "cpf_cnpj_input", list: "cpf_cnpj_list" %>
-          <datalist id="cpf_cnpj_list">
-            <% @cpf_cnpj_list.each do |cpf_cnpj| %>
-              <option value="<%= cpf_cnpj %>">
-            <% end %>
-          </datalist>
+          <%= form.label :partner_name, "Nome do Parceiro/Fornecedor", class: "form-label" %>
+          <%= form.text_field :partner_name, class: "form-control", id: "partner_name_input", 
+              placeholder: "Digite o nome ou CPF/CNPJ para buscar", 
+              autocomplete: "off" %>
+          <div id="partner_suggestions" class="list-group position-absolute" style="display: none; z-index: 1000; max-height: 200px; overflow-y: auto; width: calc(100% - 24px);"></div>
         </div>
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md-6">
+          <%= form.label :cpf_cnpj, "CPF/CNPJ", class: "form-label" %>
+          <%= form.text_field :cpf_cnpj, class: "form-control", id: "cpf_cnpj_input" %>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
           <%= form.label :value, "Valor", class: "form-label" %>
           <div class="input-group">
             <span class="input-group-text">R$</span>
             <%= form.number_field :value, class: "form-control", step: 0.01, min: 0, required: true %>
           </div>
         </div>
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md-4">
           <%= form.label :date, "Data", class: "form-label" %>
           <%= form.date_field :date, class: "form-control", required: true %>
         </div>
-      </div>
-
-      <div class="mb-3">
-        <%= form.label :payment_method, "Como foi pago", class: "form-label" %>
-        <%= form.text_field :payment_method, class: "form-control", placeholder: "Ex: Dinheiro, PIX, Cartão, etc." %>
+        <div class="col-12 col-md-4">
+          <%= form.label :payment_method, "Como foi pago", class: "form-label" %>
+          <%= form.text_field :payment_method, class: "form-control", placeholder: "Ex: PIX, Cartão" %>
+        </div>
       </div>
 
       <div class="mb-3">
@@ -88,6 +104,55 @@
 <% end %>
 
 <script>
+  let partnerSuggestionsTimeout = null;
+
+  // Partner autocomplete
+  document.getElementById('partner_name_input').addEventListener('input', function(e) {
+    clearTimeout(partnerSuggestionsTimeout);
+    const query = e.target.value;
+    const suggestionsDiv = document.getElementById('partner_suggestions');
+    
+    if (query.length < 2) {
+      suggestionsDiv.style.display = 'none';
+      return;
+    }
+    
+    partnerSuggestionsTimeout = setTimeout(() => {
+      fetch(`/payments/cpf_cnpj_suggestions?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+          suggestionsDiv.innerHTML = '';
+          if (data.length > 0) {
+            data.forEach(partner => {
+              const item = document.createElement('a');
+              item.href = '#';
+              item.className = 'list-group-item list-group-item-action';
+              item.textContent = partner.label;
+              item.onclick = function(e) {
+                e.preventDefault();
+                document.getElementById('partner_name_input').value = partner.name;
+                document.getElementById('cpf_cnpj_input').value = partner.cpf_cnpj;
+                suggestionsDiv.style.display = 'none';
+              };
+              suggestionsDiv.appendChild(item);
+            });
+            suggestionsDiv.style.display = 'block';
+          } else {
+            suggestionsDiv.style.display = 'none';
+          }
+        });
+    }, 300);
+  });
+  
+  // Hide suggestions when clicking outside
+  document.addEventListener('click', function(e) {
+    const suggestionsDiv = document.getElementById('partner_suggestions');
+    const nameInput = document.getElementById('partner_name_input');
+    if (e.target !== nameInput && !suggestionsDiv.contains(e.target)) {
+      suggestionsDiv.style.display = 'none';
+    }
+  });
+
   // Atualizar classificações secundárias quando primária mudar
   document.getElementById('primary_classification_select').addEventListener('change', function() {
     const primaryId = this.value;

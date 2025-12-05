@@ -1,2 +1,44 @@
-<h1>Curatelados#show</h1>
-<p>Find me in app/views/curatelados/show.html.erb</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0"><%= @curatelado.name %></h1>
+  <div>
+    <% if @curatelado.owner == current_user %>
+      <%= link_to "Editar", edit_curatelado_path(@curatelado), class: "btn btn-secondary" %>
+      <%= button_to "Excluir", curatelado_path(@curatelado), method: :delete, data: { turbo_confirm: "Tem certeza que deseja excluir este curatelado?" }, class: "btn btn-danger" %>
+    <% end %>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">Descrição</h5>
+    <p class="card-text"><%= @curatelado.description || "Sem descrição" %></p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">Curadores</h5>
+  </div>
+  <div class="card-body">
+    <% if @curators.any? %>
+      <div class="list-group">
+        <% @curators.each do |curator| %>
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <%= curator.email %>
+              <% if curator == @curatelado.owner %>
+                <span class="badge bg-primary ms-2">Proprietário</span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-muted">Nenhum curador associado.</p>
+    <% end %>
+  </div>
+</div>
+
+<div class="mt-3">
+  <%= link_to "Voltar", curatelados_path, class: "btn btn-secondary" %>
+</div>

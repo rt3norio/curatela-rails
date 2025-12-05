@@ -1,2 +1,47 @@
-<h1>Curatelados#index</h1>
-<p>Find me in app/views/curatelados/index.html.erb</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Meus Curatelados</h1>
+  <%= link_to "Novo Curatelado", new_curatelado_path, class: "btn btn-primary" %>
+</div>
+
+<% if @curatelados.any? %>
+  <div class="row">
+    <% @curatelados.each do |curatelado| %>
+      <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h5 class="card-title"><%= curatelado.name %></h5>
+              <% if session[:current_curatelado_id] == curatelado.id %>
+                <span class="badge bg-success">Ativo</span>
+              <% end %>
+            </div>
+            <p class="card-text text-muted small">
+              <%= truncate(curatelado.description, length: 100) || "Sem descrição" %>
+            </p>
+            <hr>
+            <div class="mb-2">
+              <small class="text-muted">Curadores:</small><br>
+              <% curatelado.curators.limit(3).each do |curator| %>
+                <span class="badge bg-secondary"><%= curator.email %></span>
+              <% end %>
+              <% if curatelado.curators.count > 3 %>
+                <span class="badge bg-light text-dark">+<%= curatelado.curators.count - 3 %></span>
+              <% end %>
+            </div>
+            <div class="btn-group w-100" role="group">
+              <%= link_to "Ver", curatelado_path(curatelado), class: "btn btn-sm btn-outline-primary" %>
+              <%= button_to "Selecionar", select_curatelado_path(curatelado), method: :post, class: "btn btn-sm btn-outline-success" %>
+              <% if curatelado.owner == current_user %>
+                <%= link_to "Editar", edit_curatelado_path(curatelado), class: "btn btn-sm btn-outline-secondary" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="alert alert-info">
+    Você ainda não possui curatelados. <%= link_to "Criar primeiro curatelado", new_curatelado_path, class: "alert-link" %>.
+  </div>
+<% end %>

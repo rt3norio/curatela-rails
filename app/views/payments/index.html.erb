@@ -1,6 +1,12 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1 class="h3 mb-0">Pagamentos</h1>
-  <%= link_to "Novo Pagamento", new_payment_path, class: "btn btn-primary" %>
+  <div>
+    <% if current_curatelado %>
+      <span class="badge bg-info me-2">Curatelado: <%= current_curatelado.name %></span>
+      <%= link_to "Trocar Curatelado", curatelados_path, class: "btn btn-sm btn-secondary me-2" %>
+    <% end %>
+    <%= link_to "Novo Pagamento", new_payment_path, class: "btn btn-primary" %>
+  </div>
 </div>
 
 <% if @payments.any? %>
@@ -26,6 +32,17 @@
             <strong><%= payment.primary_classification.name %></strong> / 
             <%= payment.secondary_classification.name %>
           </p>
+          <% if payment.curator.present? %>
+            <p class="card-text mb-2">
+              <small class="text-muted">Curador:</small>
+              <span class="badge bg-info"><%= payment.curator.email %></span>
+            </p>
+          <% end %>
+          <% if payment.partner_name.present? %>
+            <p class="card-text mb-2">
+              <small class="text-muted">Parceiro:</small> <%= payment.partner_name %>
+            </p>
+          <% end %>
           <% if payment.description.present? %>
             <p class="card-text text-muted small mb-2"><%= truncate(payment.description, length: 100) %></p>
           <% end %>
@@ -59,8 +76,9 @@
           <tr>
             <th>Data</th>
             <th>Classificação</th>
-            <th>Descrição</th>
+            <th>Parceiro/Descrição</th>
             <th>CPF/CNPJ</th>
+            <th>Curador</th>
             <th>Valor</th>
             <th>Pagamento</th>
             <th>Reembolso</th>
@@ -76,8 +94,20 @@
                 <small><%= payment.primary_classification.name %></small><br>
                 <small class="text-muted"><%= payment.secondary_classification.name %></small>
               </td>
-              <td><%= truncate(payment.description, length: 50) %></td>
+              <td>
+                <% if payment.partner_name.present? %>
+                  <strong><%= payment.partner_name %></strong><br>
+                <% end %>
+                <%= truncate(payment.description, length: 50) %>
+              </td>
               <td><%= payment.cpf_cnpj %></td>
+              <td>
+                <% if payment.curator.present? %>
+                  <span class="badge bg-info"><%= payment.curator.email.split('@').first %></span>
+                <% else %>
+                  <span class="text-muted">-</span>
+                <% end %>
+              </td>
               <td><strong><%= format_currency(payment.value) %></strong></td>
               <td><%= payment.payment_method %></td>
               <td>

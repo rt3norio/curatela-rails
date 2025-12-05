@@ -3,9 +3,20 @@
 class ReimbursementsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_reimbursement, only: [:show, :edit, :update, :destroy]
+  before_action :set_current_curatelado
 
   def index
-    @reimbursements = Reimbursement.includes(:payments).order(created_at: :desc)
+    @reimbursements = if @current_curatelado
+                        Reimbursement.where(curatelado_id: @current_curatelado.id)
+                      else
+                        Reimbursement.where(curatelado_id: nil)
+                      end
+    @reimbursements = @reimbursements.includes(:payments, :curator).order(created_at: :desc)
+    
+    # Calculate reimbursement totals by curator
+    if @current_curatelado
+      @curator_totals = calculate_curator_totals(@current_curatelado)
+    end
   end
 
   def show
@@ -13,12 +24,24 @@ class ReimbursementsController < ApplicationController
 
   def new
     @reimbursement = Reimbursement.new
-    @payments = Payment.where(reimbursement_code: [nil, '']).order(created_at: :desc)
+    @reimbursement.curatelado_id = @current_curatelado&.id
+    @payments = if @current_curatelado
+                  Payment.where(curatelado_id: @current_curatelado.id, reimbursement_code: [nil, ''])
+                else
+                  Payment.where(curatelado_id: nil, reimbursement_code: [nil, ''])
+                end.order(created_at: :desc)
+    @curators = @current_curatelado ? @current_curatelado.curators : [current_user]
   end
 
   def create
     @reimbursement = Reimbursement.new(reimbursement_params)
-    @payments = Payment.where(reimbursement_code: [nil, '']).order(created_at: :desc)
+    @reimbursement.curatelado_id = @current_curatelado&.id
+    @payments = if @current_curatelado
+                  Payment.where(curatelado_id: @current_curatelado.id, reimbursement_code: [nil, ''])
+                else
+                  Payment.where(curatelado_id: nil, reimbursement_code: [nil, ''])
+                end.order(created_at: :desc)
+    @curators = @current_curatelado ? @current_curatelado.curators : [current_user]
 
     if @reimbursement.save
       # Associar pagamentos selecionados
@@ -37,7 +60,12 @@ class ReimbursementsController < ApplicationController
   end
 
   def edit
-    @payments = Payment.order(created_at: :desc)
+    @payments = if @current_curatelado
+                  Payment.where(curatelado_id: @current_curatelado.id)
+                else
+                  Payment.where(curatelado_id: nil)
+                end.order(created_at: :desc)
+    @curators = @current_curatelado ? @current_curatelado.curators : [current_user]
   end
 
   def update
@@ -67,7 +95,12 @@ class ReimbursementsController < ApplicationController
 
       redirect_to @reimbursement, notice: 'Reembolso atualizado com sucesso.'
     else
-      @payments = Payment.order(created_at: :desc)
+      @payments = if @current_curatelado
+                    Payment.where(curatelado_id: @current_curatelado.id)
+                  else
+                    Payment.where(curatelado_id: nil)
+                  end.order(created_at: :desc)
+      @curators = @current_curatelado ? @current_curatelado.curators : [current_user]
       render :edit, status: :unprocessable_entity
     end
   end
@@ -84,9 +117,35 @@ class ReimbursementsController < ApplicationController
   def set_reimbursement
     @reimbursement = Reimbursement.find(params[:id])
   end
+  
+  def set_current_curatelado
+    if session[:current_curatelado_id]
+      @current_curatelado = current_user.curatelados.find_by(id: session[:current_curatelado_id])
+    end
+  end
 
   def reimbursement_params
-    params.require(:reimbursement).permit(:code, :reimbursement_proof)
+    params.require(:reimbursement).permit(:code, :reimbursement_proof, :curator_id)
+  end
+  
+  def calculate_curator_totals(curatelado)
+    curators_data = {}
+    
+    curatelado.curators.each do |curator|
+      payments = Payment.where(curatelado_id: curatelado.id, curator_id: curator.id)
+      reimbursed_payments = payments.where.not(reimbursement_code: [nil, ''])
+      pending_payments = payments.where(reimbursement_code: [nil, ''])
+      
+      curators_data[curator] = {
+        total: payments.sum(:value),
+        reimbursed: reimbursed_payments.sum(:value),
+        pending: pending_payments.sum(:value),
+        payment_count: payments.count,
+        pending_count: pending_payments.count
+      }
+    end
+    
+    curators_data
   end
 end
 
