@@ -6,7 +6,7 @@ class SecondaryClassification < ApplicationRecord
   has_many :payments, dependent: :destroy
 
   validates :name, presence: true
-  validates :name, uniqueness: { scope: [:primary_classification_id, :curatelado_id] }
+  validates :name, uniqueness: { scope: [:primary_classification_id, :curatelado_id], case_sensitive: false }
   
   scope :by_curatelado, ->(curatelado_id) { where(curatelado_id: curatelado_id) }
 end
