@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2024_01_01_000007) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_05_173141) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -39,6 +39,25 @@ ActiveRecord::Schema[8.1].define(version: 2024_01_01_000007) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "curatelado_curators", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "curatelado_id", null: false
+    t.boolean "is_owner", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["curatelado_id", "user_id"], name: "index_curatelado_curators_on_curatelado_id_and_user_id", unique: true
+    t.index ["curatelado_id"], name: "index_curatelado_curators_on_curatelado_id"
+    t.index ["user_id"], name: "index_curatelado_curators_on_user_id"
+  end
+
+  create_table "curatelados", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_curatelados_on_name"
+  end
+
   create_table "payment_reimbursements", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "payment_id", null: false
@@ -52,8 +71,11 @@ ActiveRecord::Schema[8.1].define(version: 2024_01_01_000007) do
   create_table "payments", force: :cascade do |t|
     t.string "cpf_cnpj"
     t.datetime "created_at", null: false
+    t.integer "curatelado_id"
+    t.integer "curator_id"
     t.date "date", null: false
     t.text "description"
+    t.string "partner_name"
     t.string "payment_method"
     t.integer "primary_classification_id", null: false
     t.string "reimbursement_code"
@@ -61,7 +83,10 @@ ActiveRecord::Schema[8.1].define(version: 2024_01_01_000007) do
     t.datetime "updated_at", null: false
     t.decimal "value", precision: 10, scale: 2, null: false
     t.index ["cpf_cnpj"], name: "index_payments_on_cpf_cnpj"
+    t.index ["curatelado_id"], name: "index_payments_on_curatelado_id"
+    t.index ["curator_id"], name: "index_payments_on_curator_id"
     t.index ["date"], name: "index_payments_on_date"
+    t.index ["partner_name"], name: "index_payments_on_partner_name"
     t.index ["primary_classification_id"], name: "index_payments_on_primary_classification_id"
     t.index ["reimbursement_code"], name: "index_payments_on_reimbursement_code"
     t.index ["secondary_classification_id"], name: "index_payments_on_secondary_classification_id"
@@ -69,23 +94,31 @@ ActiveRecord::Schema[8.1].define(version: 2024_01_01_000007) do
 
   create_table "primary_classifications", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.integer "curatelado_id"
     t.string "name", null: false
     t.datetime "updated_at", null: false
+    t.index ["curatelado_id"], name: "index_primary_classifications_on_curatelado_id"
     t.index ["name"], name: "index_primary_classifications_on_name", unique: true
   end
 
   create_table "reimbursements", force: :cascade do |t|
     t.string "code", null: false
     t.datetime "created_at", null: false
+    t.integer "curatelado_id"
+    t.integer "curator_id"
     t.datetime "updated_at", null: false
     t.index ["code"], name: "index_reimbursements_on_code", unique: true
+    t.index ["curatelado_id"], name: "index_reimbursements_on_curatelado_id"
+    t.index ["curator_id"], name: "index_reimbursements_on_curator_id"
   end
 
   create_table "secondary_classifications", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.integer "curatelado_id"
     t.string "name", null: false
     t.integer "primary_classification_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["curatelado_id"], name: "index_secondary_classifications_on_curatelado_id"
     t.index ["primary_classification_id", "name"], name: "index_secondary_on_primary_and_name", unique: true
     t.index ["primary_classification_id"], name: "index_secondary_classifications_on_primary_classification_id"
   end
@@ -104,9 +137,17 @@ ActiveRecord::Schema[8.1].define(version: 2024_01_01_000007) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "curatelado_curators", "curatelados"
+  add_foreign_key "curatelado_curators", "users"
   add_foreign_key "payment_reimbursements", "payments"
   add_foreign_key "payment_reimbursements", "reimbursements"
+  add_foreign_key "payments", "curatelados"
   add_foreign_key "payments", "primary_classifications"
   add_foreign_key "payments", "secondary_classifications"
+  add_foreign_key "payments", "users", column: "curator_id"
+  add_foreign_key "primary_classifications", "curatelados"
+  add_foreign_key "reimbursements", "curatelados"
+  add_foreign_key "reimbursements", "users", column: "curator_id"
+  add_foreign_key "secondary_classifications", "curatelados"
   add_foreign_key "secondary_classifications", "primary_classifications"
 end

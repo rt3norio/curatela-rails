@@ -15,6 +15,15 @@ Rails.application.routes.draw do
   # User management routes
   resources :users, only: [:index, :show, :edit, :update]
 
+  # Curatelado routes
+  resources :curatelados do
+    member do
+      post :select
+      post :add_curator
+      delete :remove_curator
+    end
+  end
+
   # Classifications routes
   resources :classifications, only: [:index] do
     collection do
@@ -30,6 +39,7 @@ Rails.application.routes.draw do
     collection do
       get :secondary_classifications
       get :cpf_cnpj_suggestions
+      get :partner_details
     end
   end
 
