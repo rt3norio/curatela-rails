@@ -14,6 +14,18 @@
 
   <div class="card">
     <div class="card-body">
+      <% if @curators.count > 1 %>
+        <div class="mb-3">
+          <%= form.label :curator_id, "Curador Responsável", class: "form-label" %>
+          <%= form.collection_select :curator_id, @curators, :id, :email, 
+              { prompt: "Selecione..." }, 
+              { class: "form-select", id: "curator_select" } %>
+          <small class="form-text text-muted">Para quem é este pagamento?</small>
+        </div>
+      <% else %>
+        <%= form.hidden_field :curator_id, value: current_user.id %>
+      <% end %>
+
       <div class="row g-3 mb-3">
         <div class="col-12 col-md-6">
           <%= form.label :primary_classification_id, "Classificação Primária", class: "form-label" %>
@@ -34,32 +46,46 @@
         <%= form.text_area :description, class: "form-control", rows: 3 %>
       </div>
 
+      <div class="mb-3">
+        <%= form.label :partner_id, "Parceiro", class: "form-label" %>
+        <div class="input-group">
+          <%= form.collection_select :partner_id, @partners, :id, :display_name, 
+              { prompt: "Selecione um parceiro existente ou preencha manualmente abaixo", include_blank: true }, 
+              { class: "form-select", id: "partner_select" } %>
+          <%= link_to "Novo Parceiro", new_partner_path, class: "btn btn-outline-secondary", target: "_blank" %>
+        </div>
+        <small class="form-text text-muted">Selecione um parceiro cadastrado ou deixe em branco para preencher manualmente.</small>
+      </div>
+
       <div class="row g-3 mb-3">
         <div class="col-12 col-md-6">
-          <%= form.label :cpf_cnpj, "CPF/CNPJ", class: "form-label" %>
-          <%= form.text_field :cpf_cnpj, class: "form-control", id: "cpf_cnpj_input", list: "cpf_cnpj_list" %>
-          <datalist id="cpf_cnpj_list">
-            <% @cpf_cnpj_list.each do |cpf_cnpj| %>
-              <option value="<%= cpf_cnpj %>">
-            <% end %>
-          </datalist>
+          <%= form.label :partner_name, "Nome do Parceiro/Fornecedor", class: "form-label" %>
+          <%= form.text_field :partner_name, class: "form-control", id: "partner_name_input", 
+              placeholder: "Preenchido automaticamente ao selecionar parceiro" %>
         </div>
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md-6">
+          <%= form.label :cpf_cnpj, "CPF/CNPJ", class: "form-label" %>
+          <%= form.text_field :cpf_cnpj, class: "form-control", id: "cpf_cnpj_input",
+              placeholder: "Preenchido automaticamente ao selecionar parceiro" %>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
           <%= form.label :value, "Valor", class: "form-label" %>
           <div class="input-group">
             <span class="input-group-text">R$</span>
             <%= form.number_field :value, class: "form-control", step: 0.01, min: 0, required: true %>
           </div>
         </div>
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md-4">
           <%= form.label :date, "Data", class: "form-label" %>
           <%= form.date_field :date, class: "form-control", required: true %>
         </div>
-      </div>
-
-      <div class="mb-3">
-        <%= form.label :payment_method, "Como foi pago", class: "form-label" %>
-        <%= form.text_field :payment_method, class: "form-control", placeholder: "Ex: Dinheiro, PIX, Cartão, etc." %>
+        <div class="col-12 col-md-4">
+          <%= form.label :payment_method, "Como foi pago", class: "form-label" %>
+          <%= form.text_field :payment_method, class: "form-control", placeholder: "Ex: PIX, Cartão" %>
+        </div>
       </div>
 
       <div class="mb-3">
@@ -88,6 +114,27 @@
 <% end %>
 
 <script>
+  // Partner selection handler
+  const partnerSelect = document.getElementById('partner_select');
+  if (partnerSelect) {
+    partnerSelect.addEventListener('change', function(e) {
+      const selectedOption = e.target.options[e.target.selectedIndex];
+      if (selectedOption.value) {
+        // Parse partner display name format: "Name - CPF/CNPJ"
+        const displayText = selectedOption.text;
+        const parts = displayText.split(' - ');
+        if (parts.length === 2) {
+          document.getElementById('partner_name_input').value = parts[0];
+          document.getElementById('cpf_cnpj_input').value = parts[1];
+        }
+      } else {
+        // Clear fields if no partner selected
+        document.getElementById('partner_name_input').value = '';
+        document.getElementById('cpf_cnpj_input').value = '';
+      }
+    });
+  }
+
   // Atualizar classificações secundárias quando primária mudar
   document.getElementById('primary_classification_select').addEventListener('change', function() {
     const primaryId = this.value;

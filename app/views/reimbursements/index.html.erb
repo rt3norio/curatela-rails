@@ -1,7 +1,54 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1 class="h3 mb-0">Reembolsos</h1>
-  <%= link_to "Novo Reembolso", new_reimbursement_path, class: "btn btn-primary" %>
+  <div>
+    <% if current_curatelado %>
+      <span class="badge bg-info me-2">Curatelado: <%= current_curatelado.name %></span>
+    <% end %>
+    <%= link_to "Novo Reembolso", new_reimbursement_path, class: "btn btn-primary" %>
+  </div>
 </div>
+
+<% if @curator_totals.present? %>
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">📊 Relatório de Reembolsos por Curador</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Curador</th>
+              <th>Total de Pagamentos</th>
+              <th>Valor Total</th>
+              <th>Reembolsado</th>
+              <th>Pendente de Reembolso</th>
+              <th>Qtd. Pendente</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @curator_totals.each do |curator, totals| %>
+              <tr>
+                <td><strong><%= curator.email %></strong></td>
+                <td><%= totals[:payment_count] %></td>
+                <td><strong><%= format_currency(totals[:total]) %></strong></td>
+                <td class="text-success"><%= format_currency(totals[:reimbursed]) %></td>
+                <td class="text-warning"><strong><%= format_currency(totals[:pending]) %></strong></td>
+                <td>
+                  <% if totals[:pending_count] > 0 %>
+                    <span class="badge bg-warning"><%= totals[:pending_count] %> pagamento(s)</span>
+                  <% else %>
+                    <span class="badge bg-success">Nenhum</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% end %>
 
 <% if @reimbursements.any? %>
   <!-- Mobile View: Cards -->
@@ -16,6 +63,12 @@
             </div>
             <span class="badge bg-primary"><%= reimbursement.payments.count %> pagamento(s)</span>
           </div>
+          <% if reimbursement.curator.present? %>
+            <p class="mb-2">
+              <small class="text-muted">Curador:</small>
+              <span class="badge bg-info"><%= reimbursement.curator.email %></span>
+            </p>
+          <% end %>
           <p class="h5 text-success mb-3"><%= format_currency(reimbursement.payments.sum(:value)) %></p>
           <div class="btn-group w-100" role="group">
             <%= link_to "Ver", reimbursement_path(reimbursement), class: "btn btn-sm btn-outline-primary" %>
@@ -36,6 +89,7 @@
         <thead>
           <tr>
             <th>Código</th>
+            <th>Curador</th>
             <th>Pagamentos</th>
             <th>Valor Total</th>
             <th>Data de Criação</th>
@@ -47,6 +101,13 @@
           <% @reimbursements.each do |reimbursement| %>
             <tr>
               <td><strong><%= reimbursement.code %></strong></td>
+              <td>
+                <% if reimbursement.curator.present? %>
+                  <span class="badge bg-info"><%= reimbursement.curator.email.split('@').first %></span>
+                <% else %>
+                  <span class="text-muted">-</span>
+                <% end %>
+              </td>
               <td>
                 <span class="badge bg-primary"><%= reimbursement.payments.count %> pagamento(s)</span>
               </td>

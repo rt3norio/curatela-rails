@@ -3,8 +3,14 @@
 class Payment < ApplicationRecord
   belongs_to :primary_classification
   belongs_to :secondary_classification
+  belongs_to :curatelado, optional: true
+  belongs_to :curator, class_name: 'User', optional: true
+  belongs_to :partner, optional: true
   has_many :payment_reimbursements, dependent: :destroy
   has_many :reimbursements, through: :payment_reimbursements
+  
+  # Callbacks to sync partner data
+  before_validation :sync_partner_data
 
   # Active Storage para foto do documento
   has_one_attached :document_photo
@@ -19,7 +25,28 @@ class Payment < ApplicationRecord
   validate :secondary_belongs_to_primary
 
   scope :by_cpf_cnpj, ->(cpf_cnpj) { where(cpf_cnpj: cpf_cnpj) }
+  scope :by_curatelado, ->(curatelado_id) { where(curatelado_id: curatelado_id) }
   scope :distinct_cpf_cnpj, -> { select(:cpf_cnpj).distinct.where.not(cpf_cnpj: [nil, '']).order(:cpf_cnpj) }
+  
+  # Get distinct partners with their names and CPF/CNPJ for autocomplete
+  def self.partner_suggestions(query = nil, curatelado_id = nil)
+    payments = curatelado_id ? by_curatelado(curatelado_id) : all
+    payments = payments.where.not(cpf_cnpj: [nil, ''])
+    
+    if query.present?
+      sanitized_query = sanitize_sql_like(query)
+      payments = payments.where(
+        'partner_name LIKE ? OR cpf_cnpj LIKE ?', 
+        "%#{sanitized_query}%", "%#{sanitized_query}%"
+      )
+    end
+    
+    payments.select('DISTINCT partner_name, cpf_cnpj')
+            .where.not(partner_name: [nil, ''])
+            .order(:partner_name)
+            .limit(20)
+            .map { |p| { name: p.partner_name, cpf_cnpj: p.cpf_cnpj, label: "#{p.partner_name} - #{p.cpf_cnpj}" } }
+  end
 
   private
 
@@ -28,6 +55,13 @@ class Payment < ApplicationRecord
 
     unless secondary_classification.primary_classification_id == primary_classification.id
       errors.add(:secondary_classification, 'deve pertencer à classificação primária selecionada')
+    end
+  end
+  
+  def sync_partner_data
+    if partner.present?
+      self.partner_name = partner.name
+      self.cpf_cnpj = partner.cpf_cnpj
     end
   end
 end
