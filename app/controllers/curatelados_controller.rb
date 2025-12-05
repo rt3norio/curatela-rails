@@ -75,7 +75,7 @@ class CurateladosController < ApplicationController
   private
 
   def set_curatelado
-    @curatelado = Curatelado.find(params[:id])
+    @curatelado = current_user.curatelados.find(params[:id])
   end
 
   def authorize_owner

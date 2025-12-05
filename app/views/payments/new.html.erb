@@ -121,17 +121,32 @@
       fetch(`/payments/cpf_cnpj_suggestions?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
-          suggestionsDiv.innerHTML = '';
+          // Clear previous suggestions safely
+          while (suggestionsDiv.firstChild) {
+            suggestionsDiv.removeChild(suggestionsDiv.firstChild);
+          }
+          
           if (data.length > 0) {
             data.forEach(partner => {
+              // Validate partner data
+              if (!partner.name || !partner.cpf_cnpj || !partner.label) {
+                return;
+              }
+              
               const item = document.createElement('a');
               item.href = '#';
               item.className = 'list-group-item list-group-item-action';
+              // Use textContent to prevent XSS
               item.textContent = partner.label;
               item.onclick = function(e) {
                 e.preventDefault();
-                document.getElementById('partner_name_input').value = partner.name;
-                document.getElementById('cpf_cnpj_input').value = partner.cpf_cnpj;
+                // Sanitize by setting value properties directly
+                const nameInput = document.getElementById('partner_name_input');
+                const cpfInput = document.getElementById('cpf_cnpj_input');
+                if (nameInput && cpfInput) {
+                  nameInput.value = String(partner.name);
+                  cpfInput.value = String(partner.cpf_cnpj);
+                }
                 suggestionsDiv.style.display = 'none';
               };
               suggestionsDiv.appendChild(item);
@@ -140,6 +155,10 @@
           } else {
             suggestionsDiv.style.display = 'none';
           }
+        })
+        .catch(error => {
+          console.error('Error fetching partner suggestions:', error);
+          suggestionsDiv.style.display = 'none';
         });
     }, 300);
   });

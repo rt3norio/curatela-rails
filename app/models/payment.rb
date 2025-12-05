@@ -30,9 +30,10 @@ class Payment < ApplicationRecord
     payments = payments.where.not(cpf_cnpj: [nil, ''])
     
     if query.present?
+      sanitized_query = sanitize_sql_like(query)
       payments = payments.where(
         'partner_name LIKE ? OR cpf_cnpj LIKE ?', 
-        "%#{query}%", "%#{query}%"
+        "%#{sanitized_query}%", "%#{sanitized_query}%"
       )
     end
     
