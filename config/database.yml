@@ -2,7 +2,7 @@
 # `Litesupport.root(env).join(<path>)` stores data under `LITESTACK_DATA_PATH` (default: ./db/<env>).
 # Set LITESTACK_DATA_PATH="/data" in production so the DB lives on the Fly volume.
 default: &default
-  adapter: litedb
+  adapter: <%= ENV.fetch("DATABASE_ADAPTER", "litedb") %>
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   idle_timeout: 0
 

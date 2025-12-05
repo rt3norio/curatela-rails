@@ -6,6 +6,22 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# Monkey patch to fix Litestack 0.4.3 compatibility with Rails 8.1
+# The sqlite3_production_warning configuration was removed in Rails 8.1
+# but Litestack railtie tries to set it during initialization
+module ActiveRecordSqlite3ProductionWarningPatch
+  def sqlite3_production_warning=(value)
+    # No-op: this configuration was removed in Rails 8.1
+    # Litestack tries to set this to false, but it's not needed anymore
+  end
+  
+  def sqlite3_production_warning
+    nil
+  end
+end
+
+ActiveRecord::Base.singleton_class.prepend(ActiveRecordSqlite3ProductionWarningPatch)
+
 module CuratelaLegalRails
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.

@@ -48,11 +48,7 @@ RUN bundle install && \
 COPY . .
 
 # Clean any bootsnap cache that might have old configurations
-RUN rm -rf tmp/cache/bootsnap* .bootsnap* 2>/dev/null || true
-
-# Precompile bootsnap code for faster boot times.
-# -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
-RUN bundle exec bootsnap precompile -j 1 app/ lib/
+RUN rm -rf tmp/cache .bootsnap* 2>/dev/null || true
 
 # Adjust binfiles to be executable on Linux
 RUN chmod +x bin/* && \
@@ -60,9 +56,13 @@ RUN chmod +x bin/* && \
     sed -i 's/ruby\.exe$/ruby/' bin/*
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-# Clean bootsnap cache again before assets precompile to ensure fresh config
-RUN rm -rf tmp/cache/bootsnap* .bootsnap* 2>/dev/null || true && \
-    SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+# Use sqlite3 adapter during asset precompilation (litedb is only available at runtime)
+# Do NOT precompile bootsnap before this to avoid caching old configurations
+RUN SECRET_KEY_BASE_DUMMY=1 DATABASE_ADAPTER=sqlite3 ./bin/rails assets:precompile
+
+# Precompile bootsnap code for faster boot times AFTER assets are compiled.
+# -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
+RUN bundle exec bootsnap precompile -j 1 app/ lib/
 
 
 
