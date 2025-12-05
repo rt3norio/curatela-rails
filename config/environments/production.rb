@@ -74,8 +74,6 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
-  # Litestack (SQLite) is intentional in production.
-  # Note: sqlite3_production_warning configuration was removed in Rails 8.1
 
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]

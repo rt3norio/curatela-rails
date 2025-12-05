@@ -1,36 +1,37 @@
-# SQLite via Litestack.
-# `Litesupport.root(env).join(<path>)` stores data under `LITESTACK_DATA_PATH` (default: ./db/<env>).
-# Set LITESTACK_DATA_PATH="/data" in production so the DB lives on the Fly volume.
+# SQLite configuration
+# Use environment variable DATABASE_PATH to set the database location in production
+# Default: ./storage (recommended for Fly.io deployments with persistent volumes)
 default: &default
-  adapter: <%= ENV.fetch("DATABASE_ADAPTER", "litedb") %>
+  adapter: sqlite3
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  idle_timeout: 0
+  timeout: 5000
 
 development:
   <<: *default
-  database: <%= Litesupport.root("development").join("data.sqlite3") %>
+  database: storage/development.sqlite3
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: <%= Litesupport.root("test").join("data.sqlite3") %>
+  database: storage/test.sqlite3
 
-# Keep production data on the Fly volume (/data) via LITESTACK_DATA_PATH.
+# Production configuration
+# On Fly.io, set DATABASE_PATH=/data to store on the persistent volume
 production:
   primary:
     <<: *default
-    database: <%= Litesupport.root("production").join("data.sqlite3") %>
+    database: <%= ENV.fetch("DATABASE_PATH", "storage") %>/production.sqlite3
   cache:
     <<: *default
-    database: <%= Litesupport.root("production").join("cache.sqlite3") %>
+    database: <%= ENV.fetch("DATABASE_PATH", "storage") %>/cache.sqlite3
     migrations_paths: db/cache_migrate
   queue:
     <<: *default
-    database: <%= Litesupport.root("production").join("queue.sqlite3") %>
+    database: <%= ENV.fetch("DATABASE_PATH", "storage") %>/queue.sqlite3
     migrations_paths: db/queue_migrate
   cable:
     <<: *default
-    database: <%= Litesupport.root("production").join("cable.sqlite3") %>
+    database: <%= ENV.fetch("DATABASE_PATH", "storage") %>/cable.sqlite3
     migrations_paths: db/cable_migrate

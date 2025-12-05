@@ -72,4 +72,5 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "litestack", "~> 0.4.3"
+# Litestack removed - using SQLite3 directly for Rails 8.1 compatibility
+# gem "litestack", "~> 0.4.4"

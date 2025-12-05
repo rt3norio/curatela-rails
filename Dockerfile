@@ -25,7 +25,7 @@ ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
-    LITESTACK_DATA_PATH="/data" \
+    DATABASE_PATH="/data" \
     LD_PRELOAD="/usr/local/lib/libjemalloc.so"
 
 # Throw-away build stage to reduce size of final image
@@ -56,9 +56,7 @@ RUN chmod +x bin/* && \
     sed -i 's/ruby\.exe$/ruby/' bin/*
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-# Use sqlite3 adapter during asset precompilation (litedb is only available at runtime)
-# Do NOT precompile bootsnap before this to avoid caching old configurations
-RUN SECRET_KEY_BASE_DUMMY=1 DATABASE_ADAPTER=sqlite3 ./bin/rails assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 # Precompile bootsnap code for faster boot times AFTER assets are compiled.
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
